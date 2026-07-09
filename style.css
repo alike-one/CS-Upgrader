@@ -1,0 +1,16 @@
+#bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+}
+
+/* Border Glow Effect */
+.border-glow {
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    transition: 0.3s;
+}
+.border-glow:hover { border-color: rgba(59, 130, 246, 1); box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+
+.ascii-title { font-family: monospace; font-size: 3rem; letter-spacing: 0.5rem; text-shadow: 0 0 10px #3b82f6; }
