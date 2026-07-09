@@ -1,16 +1,536 @@
-#bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+/* ============================================
+   CS2 Skin Upgrade Simulator — Стили
+   ============================================ */
 
-.glass-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
+/* --- CSS-переменные --- */
+:root {
+  --bg: #06060c;
+  --bg-card: #0d0d14;
+  --fg: #e8e8ed;
+  --muted: #4a4a5a;
+  --accent: #e8a023;
+  --accent-dim: #b07a18;
+  --card: #111118;
+  --border: #1e1e2a;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --glow-color: rgba(232, 160, 35, 0.4);
 }
 
-/* Border Glow Effect */
-.border-glow {
-    border: 1px solid rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-    transition: 0.3s;
-}
-.border-glow:hover { border-color: rgba(59, 130, 246, 1); box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+/* --- Сброс и базовые стили --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.ascii-title { font-family: monospace; font-size: 3rem; letter-spacing: 0.5rem; text-shadow: 0 0 10px #3b82f6; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Скрытие скроллбара с сохранением функциональности */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ============================================
+   ФОНОВЫЙ ЭФФЕКТ — Color Bends (феррофлюид)
+   ============================================ */
+#bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.5;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.bg-blob--1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #b07a18 0%, transparent 70%);
+  top: -10%; left: -10%;
+  animation: blobMove1 20s ease-in-out infinite alternate;
+}
+.bg-blob--2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #1a6b4a 0%, transparent 70%);
+  bottom: -15%; right: -5%;
+  animation: blobMove2 25s ease-in-out infinite alternate;
+}
+.bg-blob--3 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, #8b3a1a 0%, transparent 70%);
+  top: 40%; left: 50%;
+  animation: blobMove3 18s ease-in-out infinite alternate;
+}
+.bg-blob--4 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #2a1a5e 0%, transparent 70%);
+  top: 10%; right: 20%;
+  animation: blobMove4 22s ease-in-out infinite alternate;
+}
+.bg-blob--5 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #0e4a3a 0%, transparent 70%);
+  bottom: 20%; left: 20%;
+  animation: blobMove5 28s ease-in-out infinite alternate;
+}
+
+/* Шумовой оверлей для текстуры */
+#bg-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+@keyframes blobMove1 {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(15vw, 10vh) scale(1.15); }
+  66%  { transform: translate(5vw, 25vh) scale(0.9); }
+  100% { transform: translate(20vw, 5vh) scale(1.1); }
+}
+@keyframes blobMove2 {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-20vw, -15vh) scale(1.2); }
+  100% { transform: translate(-10vw, -25vh) scale(0.95); }
+}
+@keyframes blobMove3 {
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50%  { transform: translate(-15vw, 10vh) scale(1.3) rotate(30deg); }
+  100% { transform: translate(10vw, -10vh) scale(0.85) rotate(-20deg); }
+}
+@keyframes blobMove4 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-25vw, 20vh) scale(1.15); }
+}
+@keyframes blobMove5 {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(15vw, -20vh) scale(1.25); }
+}
+
+/* Уменьшение анимаций для пользователей с настройкой reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .bg-blob { animation: none !important; }
+  .ascii-title { animation: none !important; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+/* ============================================
+   ASCII-ТЕКСТ — Заголовок
+   ============================================ */
+.ascii-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: clamp(3px, 0.65vw, 6px);
+  line-height: 1.1;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  white-space: pre;
+  text-shadow: 0 0 20px var(--glow-color), 0 0 40px rgba(232, 160, 35, 0.15);
+  animation: asciiPulse 4s ease-in-out infinite;
+  user-select: none;
+  overflow: hidden;
+  max-height: 4.5em;
+}
+
+@keyframes asciiPulse {
+  0%, 100% { text-shadow: 0 0 20px var(--glow-color), 0 0 40px rgba(232, 160, 35, 0.15); opacity: 0.9; }
+  50%      { text-shadow: 0 0 30px var(--glow-color), 0 0 60px rgba(232, 160, 35, 0.25); opacity: 1; }
+}
+
+/* ============================================
+   GLOW BORDER — Свечение границ
+   ============================================ */
+.glow-border {
+  position: relative;
+  overflow: hidden;
+}
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--glow-angle, 135deg),
+    transparent 20%,
+    var(--glow-color) 50%,
+    transparent 80%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glowRotate 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes glowRotate {
+  to { --glow-angle: 495deg; }
+}
+
+/* Регистрируем кастомное свойство для анимации */
+@property --glow-angle {
+  syntax: '<angle>';
+  initial-value: 135deg;
+  inherits: false;
+}
+
+/* Золотое свечение для кнопки апгрейда */
+.glow-border-gold {
+  position: relative;
+  overflow: hidden;
+}
+.glow-border-gold::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    var(--glow-angle, 0deg),
+    transparent 10%,
+    rgba(232, 160, 35, 0.8) 30%,
+    rgba(255, 200, 50, 0.9) 50%,
+    rgba(232, 160, 35, 0.8) 70%,
+    transparent 90%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glowRotate 3s linear infinite;
+  pointer-events: none;
+}
+
+/* ============================================
+   СЛОТЫ АПГРЕЙДЕРА
+   ============================================ */
+.upgrade-slot {
+  position: relative;
+  background: var(--bg-card);
+  transition: all 0.3s ease;
+}
+.upgrade-slot.filled {
+  border-style: solid;
+}
+.upgrade-slot.selected-input {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(232, 160, 35, 0.15), inset 0 0 20px rgba(232, 160, 35, 0.05);
+}
+.upgrade-slot.selected-target {
+  border-color: var(--success);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), inset 0 0 20px rgba(34, 197, 94, 0.05);
+}
+
+/* Кнопка очистки слота */
+.slot-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 5;
+}
+.upgrade-slot:hover .slot-clear { opacity: 1; }
+.slot-clear:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+/* ============================================
+   КАРТОЧКИ СКИНОВ
+   ============================================ */
+.skin-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.skin-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,255,255,0.15);
+}
+.skin-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--glow-angle, 135deg),
+    transparent 30%,
+    rgba(255,255,255,0.15) 50%,
+    transparent 70%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: glowRotate 6s linear infinite;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.skin-card:hover::after { opacity: 1; }
+
+.skin-card__image {
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  background: #0a0a10;
+  display: block;
+}
+
+.skin-card__rarity-bar {
+  height: 3px;
+  width: 100%;
+}
+
+.skin-card__info {
+  padding: 8px 10px 10px;
+}
+
+.skin-card__name {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.skin-card__weapon {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.skin-card__price {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.skin-card__action {
+  margin-top: 8px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.skin-card__action--buy {
+  background: rgba(232, 160, 35, 0.1);
+  border-color: rgba(232, 160, 35, 0.3);
+  color: var(--accent);
+}
+.skin-card__action--buy:hover {
+  background: rgba(232, 160, 35, 0.2);
+}
+.skin-card__action--buy:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.skin-card__action--select {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+}
+.skin-card__action--select:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* Состояние «выбран» */
+.skin-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px rgba(232, 160, 35, 0.2);
+}
+
+/* ============================================
+   ВКЛАДКИ
+   ============================================ */
+.tab-btn {
+  background: transparent;
+  color: var(--muted);
+}
+.tab-btn:hover {
+  color: var(--fg);
+  background: rgba(255,255,255,0.03);
+}
+.tab-btn.active {
+  color: var(--accent);
+  border-color: rgba(232, 160, 35, 0.4);
+  background: rgba(232, 160, 35, 0.08);
+}
+
+/* ============================================
+   МОДАЛЬНЫЕ ОКНА
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-content {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Выбранная сумма пополнения */
+.deposit-amount.selected {
+  border-color: var(--accent) !important;
+  background: rgba(232, 160, 35, 0.1) !important;
+  color: var(--accent) !important;
+}
+
+/* ============================================
+   ТОСТЫ
+   ============================================ */
+.toast {
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.08);
+  max-width: 360px;
+  pointer-events: auto;
+}
+.toast--success {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+.toast--error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+.toast--info {
+  background: rgba(232, 160, 35, 0.15);
+  border-color: rgba(232, 160, 35, 0.3);
+  color: #fcd34d;
+}
+
+/* ============================================
+   СПИННЕР ЗАГРУЗКИ
+   ============================================ */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   РЕЗУЛЬТАТ АПГРЕЙДА
+   ============================================ */
+.result-success {
+  background: linear-gradient(135deg, #0a1f12 0%, #0d1a10 100%);
+  border: 2px solid rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 60px rgba(34, 197, 94, 0.15);
+}
+.result-fail {
+  background: linear-gradient(135deg, #1f0a0a 0%, #1a0d0d 100%);
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 60px rgba(239, 68, 68, 0.15);
+}
+
+/* ============================================
+   АНИМАЦИЯ КРУЧЕНИЯ СТРЕЛКИ
+   ============================================ */
+.arrow-spinning i {
+  animation: arrowSpin 0.15s linear infinite;
+}
+@keyframes arrowSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ПРОБЛЕСК СЛОТА ПРИ АПГРЕЙДЕ
+   ============================================ */
+@keyframes slotFlash {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(2.5) saturate(0); }
+  100% { filter: brightness(1); }
+}
+.slot-flashing {
+  animation: slotFlash 0.15s ease-in-out 6;
+}
+
+/* ============================================
+   ВЫБОР РЕЖИМА СЛОТА (клик по пустому слоту)
+   ============================================ */
+.slot-mode-indicator {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 10;
+  animation: indicatorBounce 1.5s ease-in-out infinite;
+}
+@keyframes indicatorBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ
+   ============================================ */
+@media (max-width: 640px) {
+  .ascii-title { display: none; }
+  .upgrade-slot { width: 140px; height: 170px; }
+  .skin-card__name { font-size: 10px; }
+  .skin-card__price { font-size: 11px; }
+}
