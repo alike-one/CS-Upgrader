@@ -1,37 +1,215 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>CS2 SKIN UPGRADE SIM</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS2 Skin Upgrade Simulator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@200;400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"Share Tech Mono"', 'monospace'],
+            display: ['"Exo 2"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-black text-white overflow-x-hidden">
-    <canvas id="bg-canvas"></canvas>
+<body class="font-display text-white min-h-screen overflow-x-hidden">
 
-    <div class="relative z-10 p-8">
-        <h1 class="ascii-title text-center text-blue-500 font-bold mb-10">
-            SKIN UPGRADE SIM
-        </h1>
+  <!-- Фоновый контейнер для ferrofluid-эффекта -->
+  <div id="bg-container"></div>
 
-        <div class="glass-card p-6 rounded-xl border-glow">
-            <h2 class="text-xl">Баланс: <span id="balance">100.00</span>$</h2>
-            <button id="add-funds" class="glow-button mt-4 px-4 py-2 border">Пополнить</button>
+  <!-- Основной контент поверх фона -->
+  <div id="app" class="relative z-10 min-h-screen flex flex-col">
+
+    <!-- Хедер -->
+    <header class="px-4 md:px-8 py-4 flex items-center justify-between border-b border-white/5 backdrop-blur-sm bg-black/20">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-600 rounded-lg flex items-center justify-center">
+          <i class="fa-solid fa-arrow-up text-black text-sm"></i>
         </div>
-        
-        <div id="skins-container" class="grid grid-cols-3 gap-6 mt-10"></div>
-    </div>
+        <span class="font-mono text-xs text-white/40 hidden sm:inline">v2.1.0</span>
+      </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-        <div class="glass-card p-8 border-glow text-center">
-            <h3 class="text-2xl mb-4">Google Pay Simulation</h3>
-            <p>Успешно зачислено 1000$</p>
-            <button onclick="closeModal()" class="mt-4 bg-blue-600 px-4 py-2">Закрыть</button>
+      <div class="ascii-title" aria-label="SKIN UPGRADE SIM"></div>
+
+      <div class="flex items-center gap-4">
+        <!-- Баланс -->
+        <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 glow-border">
+          <i class="fa-solid fa-wallet text-amber-400 text-sm"></i>
+          <span id="balance-display" class="font-mono text-amber-400 font-bold">$0.00</span>
         </div>
-    </div>
+        <!-- Кнопка пополнения -->
+        <button id="btn-deposit" class="glow-border bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400 px-4 py-2 rounded-xl transition-all duration-300 font-semibold text-sm flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">Пополнить</span>
+        </button>
+      </div>
+    </header>
 
-    <script src="main.js" type="module"></script>
+    <!-- Основная область -->
+    <main class="flex-1 flex flex-col">
+
+      <!-- Секция апгрейдера -->
+      <section class="px-4 md:px-8 py-8">
+        <div class="max-w-5xl mx-auto">
+          <!-- Зона апгрейда -->
+          <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-8">
+
+            <!-- Слот входящего скина -->
+            <div id="slot-input" class="upgrade-slot w-48 h-56 rounded-2xl border-2 border-dashed border-white/15 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:border-white/30 hover:bg-white/5 group" data-type="input">
+              <div class="slot-placeholder text-center">
+                <i class="fa-solid fa-arrow-right-to-bracket text-2xl text-white/20 mb-2 group-hover:text-white/40 transition-colors"></i>
+                <p class="text-xs text-white/30 group-hover:text-white/50 transition-colors">Входящий скин</p>
+              </div>
+              <div class="slot-content hidden w-full h-full p-2 flex-col items-center"></div>
+            </div>
+
+            <!-- Стрелка + вероятность -->
+            <div class="flex flex-col items-center gap-3">
+              <div id="upgrade-arrow" class="text-white/15 text-3xl">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
+              <div id="probability-display" class="text-center hidden">
+                <span class="text-xs text-white/40 block mb-1">Шанс</span>
+                <span id="prob-value" class="font-mono text-2xl font-bold text-emerald-400">0%</span>
+              </div>
+            </div>
+
+            <!-- Слот целевого скина -->
+            <div id="slot-target" class="upgrade-slot w-48 h-56 rounded-2xl border-2 border-dashed border-white/15 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:border-white/30 hover:bg-white/5 group" data-type="target">
+              <div class="slot-placeholder text-center">
+                <i class="fa-solid fa-bullseye text-2xl text-white/20 mb-2 group-hover:text-white/40 transition-colors"></i>
+                <p class="text-xs text-white/30 group-hover:text-white/50 transition-colors">Целевой скин</p>
+              </div>
+              <div class="slot-content hidden w-full h-full p-2 flex-col items-center"></div>
+            </div>
+          </div>
+
+          <!-- Кнопка апгрейда -->
+          <div class="text-center mb-4">
+            <button id="btn-upgrade" class="glow-border-gold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-lg px-12 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100" disabled>
+              <i class="fa-solid fa-bolt mr-2"></i>АПГРЕЙД
+            </button>
+          </div>
+          <p id="upgrade-hint" class="text-center text-xs text-white/25">Выберите входящий и целевой скин из инвентаря ниже</p>
+        </div>
+      </section>
+
+      <!-- Вкладки и фильтры -->
+      <section class="px-4 md:px-8 pb-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div class="flex gap-2">
+              <button class="tab-btn active font-mono text-xs px-4 py-2 rounded-lg border border-white/10 transition-all" data-tab="inventory">
+                <i class="fa-solid fa-box-open mr-1"></i> Инвентарь (<span id="inv-count">0</span>)
+              </button>
+              <button class="tab-btn font-mono text-xs px-4 py-2 rounded-lg border border-white/10 transition-all" data-tab="shop">
+                <i class="fa-solid fa-store mr-1"></i> Магазин
+              </button>
+            </div>
+
+            <!-- Фильтры для магазина -->
+            <div id="shop-filters" class="flex flex-wrap gap-2 hidden">
+              <select id="filter-weapon" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/70 font-mono outline-none focus:border-amber-500/50">
+                <option value="">Все оружия</option>
+              </select>
+              <select id="filter-rarity" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/70 font-mono outline-none focus:border-amber-500/50">
+                <option value="">Все редкости</option>
+              </select>
+              <input id="search-input" type="text" placeholder="Поиск..." class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white/70 font-mono outline-none focus:border-amber-500/50 w-36">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Сетка скинов -->
+      <section class="px-4 md:px-8 pb-8 flex-1">
+        <div id="skin-grid" class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <!-- Скины рендерятся здесь -->
+        </div>
+        <div id="empty-state" class="max-w-7xl mx-auto text-center py-20 hidden">
+          <i class="fa-solid fa-box-open text-4xl text-white/10 mb-4"></i>
+          <p class="text-white/30 text-sm">Инвентарь пуст. Купите скины в магазине.</p>
+        </div>
+        <div id="loading-state" class="max-w-7xl mx-auto text-center py-20">
+          <div class="loading-spinner mx-auto mb-4"></div>
+          <p class="text-white/30 text-sm font-mono">Загрузка данных о скинах...</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Футер -->
+    <footer class="px-4 md:px-8 py-4 border-t border-white/5 text-center">
+      <p class="text-xs text-white/20 font-mono">CS2 SKIN UPGRADE SIM — Симулятор. Ничего не покупайте и не продавайте.</p>
+    </footer>
+  </div>
+
+  <!-- Модальное окно: Google Pay -->
+  <div id="modal-deposit" class="modal-overlay hidden">
+    <div class="modal-content glow-border bg-[#0d0d12] rounded-2xl p-6 w-full max-w-sm mx-4">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-bold text-lg">Пополнить баланс</h3>
+        <button id="modal-close" class="text-white/30 hover:text-white transition-colors">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Быстрые суммы -->
+      <div class="grid grid-cols-3 gap-2 mb-6">
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="50">$50</button>
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="100">$100</button>
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="250">$250</button>
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="500">$500</button>
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="1000">$1000</button>
+        <button class="deposit-amount border border-white/10 rounded-xl py-3 text-sm font-mono hover:bg-white/5 hover:border-amber-500/30 transition-all" data-amount="5000">$5000</button>
+      </div>
+
+      <!-- Произвольная сумма -->
+      <div class="mb-6">
+        <label class="text-xs text-white/40 mb-1 block">Или введите сумму:</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 font-mono">$</span>
+          <input id="custom-amount" type="number" min="1" max="99999" placeholder="0.00" class="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 font-mono text-white outline-none focus:border-amber-500/50 transition-colors">
+        </div>
+      </div>
+
+      <!-- Кнопка Google Pay -->
+      <button id="btn-google-pay" class="w-full bg-white text-black font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-white/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="#4285F4"/>
+          <path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z" fill="#EA4335" opacity=".01"/>
+          <path d="M5.795 7.095L2.543 4.773C.915 7.072 0 9.86 0 12c0 2.14.915 4.928 2.543 7.227l3.252-2.322C4.613 15.395 4.017 13.812 4.017 12s.596-3.395 1.778-4.905z" fill="#FBBC05"/>
+          <path d="M12.24 0C15.48 0 18.19 1.186 20.28 3.074L17.025 6.212C16.131 5.352 14.57 4.363 12.24 4.363c-4.095 0-7.439 3.389-7.439 7.574h-3.806c0-6.635 5.365-11.937 11.745-11.937z" fill="#EA4335"/>
+          <path d="M12.24 0c3.24 0 5.95 1.186 8.04 3.074l-3.255 3.138C16.131 5.352 14.57 4.363 12.24 4.363c-4.095 0-7.439 3.389-7.439 7.574h3.806c0 4.185 3.344 7.574 7.439 7.574 2.33 0 3.891-.989 4.785-1.849l3.254 3.138C20.28 22.814 17.57 24 12.24 24 5.605 24 .24 18.635.24 12S5.605 0 12.24 0z" fill="#34A853" opacity=".01"/>
+        </svg>
+        Оплатить через Google Pay
+      </button>
+      <p class="text-center text-[10px] text-white/20 mt-3">Это симулятор. Никакие реальные платежи не производятся.</p>
+    </div>
+  </div>
+
+  <!-- Модальное окно: Результат апгрейда -->
+  <div id="modal-result" class="modal-overlay hidden">
+    <div id="result-content" class="modal-content rounded-2xl p-8 w-full max-w-md mx-4 text-center">
+      <!-- Контент заполняется динамически -->
+    </div>
+  </div>
+
+  <!-- Тост-уведомления -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2"></div>
+
+  <!-- Частицы для эффекта успеха -->
+  <canvas id="confetti-canvas" class="fixed inset-0 z-40 pointer-events-none"></canvas>
+
+  <script src="main.js"></script>
 </body>
 </html>
